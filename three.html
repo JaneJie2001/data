@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+		<title>ArcGIS API for JavaScript Tutorials: Display a map</title>
+		<style>
+			html,
+			body{
+				padding: 0;
+				margin: 0;
+				height: 100%;
+				width: 100%;
+			}
+			#view1Div {
+				float: left;
+				width: 50%; 
+				height: 100%;
+				position: relative;
+			}
+			#viewDiv {
+				/* padding: 0;
+				margin: 0; */
+				width: 100%; 
+				height: 100%
+			}
+			#view2Div {
+				float: left;
+				width: 50%; 
+				height: 100%;
+				position: relative;
+			}
+			#viewmap {
+				/* padding: 0;
+				margin: 0; */
+				width: 100%; 
+				height: 100%
+			}
+			#layerdiv{
+				top: 15px;
+				right: 15px;
+				position: absolute;
+				z-index: 99;
+				/* background-color: white;
+				border-radius: 8px;
+				padding: 8px;*/
+				/* opacity: 0.85; */
+/* 				line-height: 22px;
+				font-size: 10pt;
+				overflow-y:auto; */
+			}
+			#Basemaps{
+				background-color: white;
+				border-radius: 8px;
+				padding: 8px;
+				line-height: 22px;/* 字行距 */
+				font-size: 10pt;/*  字体大小*/
+				overflow-y:auto;
+			}
+			
+			#Layers{
+				background-color: white;
+				border-radius: 8px;
+				padding: 8px;
+				line-height: 22px;/* 字行距 */
+				font-size: 10pt;/*  字体大小*/
+				overflow-y:auto;
+			}
+			#coor {
+				bottom: 20px;
+				left: 15px;
+				position: absolute;
+				background-color: white;
+				border-radius: 8px;
+				padding: 5px;
+				opacity: 0.85;
+				font-size: 9pt;
+			}
+			#scale {
+				bottom: 20px;
+				right: 15px;
+				position: absolute;
+				background-color: white;
+				border-radius: 8px;
+				padding: 5px;
+				opacity: 0.85;
+				font-size: 9pt;
+			}
+			.esri-button {
+				max-width: 80px;
+				margin-left: 0px;
+			}
+			#selection {
+			    display: flex;
+			    justify-content: center;
+			}
+	
+/* 			#delectButton{
+				border-style: solid;
+				border-color: rgb(187, 187, 187);
+				border-width:0.7pt;
+				padding: 3px;
+				background-color: white;
+			}
+			#delectButton:hover{
+				 background-color:rgb(239, 239, 239);			
+				border-color: rgb(105, 105, 105);
+				border-width:0.7pt;
+			}
+			#addButton{
+				border-style: solid;
+				border-color: rgb(187, 187, 187);
+				border-width:0.7pt;
+				padding: 3px;
+				background-color: white;
+				margin-left: 20px;
+			}
+			#addButton:hover{
+				background-color:rgb(239, 239, 239);			
+				border-color: rgb(105, 105, 105);
+				border-width:0.7pt;
+			} */
+			#url {
+				border-left: none;
+				border-right: none;
+				border-top: none;
+				border-bottom: 1px solid #000;
+				outline: none;
+				width:120px;
+			}
+		
+		</style>
+		<link rel="stylesheet" href="https://js.arcgis.com/4.23/esri/themes/light/main.css">
+		<script src="https://js.arcgis.com/4.23/"></script>
+		<script>
+			require(["esri/config","esri/Map", 
+			"esri/views/MapView",
+			"esri/layers/FeatureLayer",
+			"esri/core/watchUtils",
+			"esri/layers/GeoJSONLayer",
+			"esri/layers/MapImageLayer",
+			"esri/layers/ImageryLayer",
+			"esri/layers/StreamLayer",
+			"esri/views/SceneView"], 
+			function (esriConfig, Map, MapView, FLayer, wU,GeoJSONLayer,MLayer,ILayer,StLayer,SceneView){
+		
+				esriConfig.apiKey = 
+				"AAPK449340f85b664e6b802d2d0e65eb4849vlSII8YqKpEj5Fn0hCy2qr4QyOAZRZSB6XWDc2-X8pFlNoRYoQoetUvFs1Y_JVKL";
+			
+				const map = new Map({
+					basemap: "arcgis-navigation" // Basemap layer service
+				});
+				const view1 = new MapView({
+					map: map,
+					center: [114.805, 34.027], // Longitude, latitude
+					zoom: 3, // Zoom level
+					container: "viewDiv" // Div element
+				});
+				const map2 = new Map({
+					basemap: "osm-standard" // Basemap layer service
+				});
+				const view2 = new MapView({
+					map: map2,
+					center: [114.805, 34.027], // Longitude, latitude
+					zoom: 3, // Zoom level
+					container: "viewmap" // Div element
+				});
+/* 				const view2 = new SceneView({
+					map: map2,
+					center: [114.805, 34.027], // Longitude, latitude
+					zoom: 3, // Zoom level
+					container: "viewmap" // Div element
+				}); */
+				var SampleWorldCities = new FLayer({
+					url :"https://sampleserver6.arcgisonline.com/arcgis/rest/services/SampleWorldCities/MapServer",
+					visible: false
+				});
+				
+				var Earthquakes_Since1970 = new FLayer({
+					url :"https://sampleserver6.arcgisonline.com/arcgis/rest/services/Earthquakes_Since1970/FeatureServer",
+					visible: false
+				});
+				var SeaTemperature = new ILayer({
+					url :"https://sampleserver6.arcgisonline.com/arcgis/rest/services/ScientificData/SeaTemperature/ImageServer",
+					visible: false					
+				});
+/* 				const ChinaProvince = new GeoJSONLayer({
+				    url: "https://cxqttkl.github.io/web4gis15/China_No_Area.geojson",
+					copyright: "China Province",
+					visible: false,
+					renderer: {
+						type: "simple",  
+						symbol: { */
+							/*type: "simple-fill", 
+							color: "black",
+							outline: {
+							width: 0.5,
+							color: "white"
+							},
+							type: "simple-line",  // autocasts as new SimpleLineSymbol()
+							color: "rgba(0, 170, 255, 1)",
+							width: "2px",
+							style: "short-dash"
+						}
+					}
+				});
+				map.add(ChinaProvince); */
+				map.add(SampleWorldCities);												
+				map.add(Earthquakes_Since1970);	
+				map.add(SeaTemperature);
+				const MapLayers = [SampleWorldCities, Earthquakes_Since1970, SeaTemperature];
+				
+				var layers = document.getElementsByName('layer');
+				var LRS = document.getElementById('Layers');
+				LRS.addEventListener('click',function(){
+					var layernum = 0;
+					// SampleWorldCities.visible = layers[0].checked;
+					// Earthquakes_Since1970.visible = layers[1].checked;
+					for (var i=0;i<layers.length;i++){
+						MapLayers[i].visible = layers[i].checked;
+						if (layers[i].checked){
+							layernum += 1;
+						}									
+					}
+					var info = "已显示" + layernum + "个图层，共" + layers.length + "个图层";
+					document.getElementById('num').innerHTML = info;
+				});
+				var Delect = document.getElementById('delectButton');
+				Delect.onclick = function(){
+					if (layers.length > 0){
+						var i = 0;
+						while (i<layers.length){
+							if (layers[i].checked){
+								map.remove(MapLayers[i]);
+								MapLayers.splice(i,1);
+								document.getElementById(layers[i].value).innerHTML = "";
+							}else{
+								i++;
+							}
+						}					
+					}
+				};
+/* 				layers[0].addEventListener('change',function(){
+					SampleWorldCities.visible = layers[0].checked;
+				});
+				
+				layers[1].addEventListener('change',function(){
+					Earthquakes_Since1970.visible = layers[1].checked;
+				}); */
+				
+				var basemaps = document.getElementsByName('Basemap');
+				var BMS = document.getElementById('Basemaps');
+				BMS.addEventListener('click',function(){
+					for (var i=0;i<basemaps.length;i++){					
+						var basevlue = basemaps[i];
+						if (basevlue.checked){
+							map.basemap=basevlue.value;
+						}									
+					}
+				});
+				
+/* 				basemaps[0].addEventListener('change',function(){
+					map.basemap="osm-standard";
+				});
+				basemaps[1].addEventListener('change',function(){
+					map.basemap="streets-vector";
+				});
+				basemaps[2].addEventListener('change',function(){
+					map.basemap="streets-navigation-vector";
+				}); */
+				
+				view1.on('pointer-move', function(event){
+					let point = view1.toMap({x: event.x, y: event.y});
+					//var info = "X:" + point.x.toFixed(2) +", Y:" + point.y.toFixed(2);
+					var info = "Lon:" + point.longitude.toFixed(2) +", Lat:" + point.latitude.toFixed(2);
+					document.getElementById('coord').innerHTML = info;
+				});
+				view1.watch("stationary",function(isStationary){
+					document.getElementById('Scale').innerHTML = "比例尺 1:"+ Math.round(view1.scale);
+				});
+				const views = [view1, view2];
+				let active;
+				
+				const link = function(source){
+					if (!active || !active.viewpoint || active !== source) {
+						return;
+					}
+
+					for (const view of views) {
+						if (view !== active) {
+							view.viewpoint = active.viewpoint;
+						}
+					}
+				};
+		
+				for (const view of views) {
+					view.watch(["interacting", "animation"], function(){
+						active = view;
+						link(active);
+					});
+					view.watch("viewpoint", function(){
+						link(view)
+					});
+				}
+				var Add = document.getElementById('addButton');
+				Add.onclick = function(){
+					var urlvalue = document.getElementById('url').value;
+					if (urlvalue != ""){
+						var listvalue = urlvalue.split('/');
+						var mapserver = listvalue.at(-1);
+						if (mapserver == "FeatureServer"){
+							var addlayer = new FLayer({
+								url :urlvalue,								
+							});
+						}else if (mapserver == "MapServer"){
+							var addlayer = new MLayer({
+								url :urlvalue,
+							});
+						}else if(mapserver == "ImageServer"){
+							var addlayer = new ILayer({
+								url :urlvalue,
+							});
+						}else if(mapserver == "StreamServer"){
+							var addlayer = new StLayer({
+								url :urlvalue,
+							});
+						}else{return}
+						map.add(addlayer);
+						MapLayers.push(addlayer);
+						var check = '<label id = "'+ listvalue.at(-2) +'"><input type="checkbox" name = "layer" value="'+listvalue.at(-2) +'"/> '+listvalue.at(-2)+'</br></label>';
+						document.getElementById('addLayers').innerHTML += check;
+						for (var i=0;i<layers.length;i++){
+							 layers[i].checked = MapLayers[i].visible;								
+						}
+						document.getElementById('url').value = '';
+					}
+				};
+			});
+
+
+		</script>
+	<body>		
+		<div id="view1Div">
+			<div id="viewDiv"></div>
+			<div id="layerdiv">
+				<div id = "Basemaps">
+					<label>
+						<input type="radio" checked="checked" name="Basemap" value="arcgis-navigation" /> arcgis-navigation
+					</label>
+					</br>
+					<label>						
+						<input type="radio" name="Basemap" value="arcgis-imagery" /> arcgis-imagery
+					</label>
+					</br>
+					<label>
+						<input type="radio" name="Basemap" value="arcgis-oceans" /> arcgis-oceans
+					</label>
+					</br>
+					<label>
+						<input type="radio" name="Basemap" value="arcgis-newspaper" /> arcgis-newspaper
+					</label>
+					</br>
+					<label>
+						<input type="radio" name="Basemap" value="arcgis-navigation-night" /> arcgis-navigation-night
+					</label>
+				</div>
+				</br>
+				<div id = "Layers">
+					<div id = "addLayers">
+						<label id = "SampleWorldCities" >
+							<input type="checkbox" name = "layer" value="SampleWorldCities" /> SampleWorldCities
+							</br>
+						</label>
+						
+						<label id = "Earthquakes_Since1970">
+							<input type="checkbox" name = "layer" value="Earthquakes_Since1970" /> Earthquakes_Since1970	
+							</br>
+						</label>
+						
+						<label id = "SeaTemperature">
+							<input type="checkbox" name = "layer" value="SeaTemperature" /> SeaTemperature	
+							</br>
+						</label>
+					</div>
+					<label id = "num">已显示0个图层，共3个图层</label>
+					</br>
+					<div id="selection">
+						<button id="delectButton" class="esri-button esri-button--tertiary">删除图层</button>
+						<button id="addButton" class="esri-button esri-button--tertiary">添加图层</button>
+						<!-- .esri-button
+						.esri-button--secondary
+						.esri-button--tertiary -->
+					</div>
+					网址：<input type="text" id = "url" value="" />
+				</div>
+			</div>
+
+			<div id="coor">
+				坐标 <label id = "coord"></label> 
+			</div>
+			<div id="scale">
+				<label id = "Scale"></label> 
+			</div>
+		</div>
+		<div id="view2Div">
+			<div id="viewmap"></div>
+		</div>
+
+	</body>
+</html>
