@@ -24,6 +24,11 @@
 				/* max-height: 500px; */
 				overflow:auto;
 			}
+			#coord{
+				padding: 10px;
+				width: 220px;
+				text-align:center
+			}
 		</style>
 		<link rel="stylesheet" href="https://js.arcgis.com/4.23/esri/themes/dark/main.css">
 		<link rel="stylesheet" type="text/css" href="https://js.arcgis.com/calcite-components/1.0.0-beta.79/calcite.css"/>
@@ -247,6 +252,7 @@
 				});
 				view.ui.add(bgExpand,"top-left");
 				view.ui.add(Popula,"top-right");
+				view.ui.add(coord,"bottom-right");
 				var txt_pop = document.getElementById('q_pop');
 				var Query = document.getElementById('query_pop');
 				var Clear = document.getElementById('clear_query');
@@ -258,14 +264,27 @@
 							where:txt_pop.value
 						};
 						view.popup.close();
+						popsymbol.outline = {
+							color: "rgb(0, 255, 255)",
+							width: 1
+						};
 					}					
 					//NAME='Weifang City'
 					//where = txt_pop.value;
 				};
 				Clear.onclick = function(){
+					popsymbol.outline = {
+						color: "rgba(0, 0, 0, 0.1)",
+						width: 0.5
+					};
 					layerView.filter = null;
 					view.popup.close();
 				};
+				view.on('pointer-move', function(event){
+					let point = view.toMap({x: event.x, y: event.y});
+					var info = "Lon:" + point.longitude.toFixed(2) +", Lat:" + point.latitude.toFixed(2);
+					document.getElementById('coord').innerHTML = info;
+				});
 			});
 		</script>
 	<body>		
@@ -314,5 +333,6 @@
 				<calcite-button id="clear_query" width="half" appearance="outline" alignment="center" scale="s" style="margin-left: 10px;">Clear query</calcite-button>
 			</div>
 		</div>
+		<div id = "coord" class="esri-widget"></div>
 	</body>
 </html>
