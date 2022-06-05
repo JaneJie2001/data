@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+		<title>2018年全国人口分布情况</title>
+		<style>
+			html,
+			body,
+			#viewDiv {
+				padding: 0;
+				margin: 0;
+				width: 100%; 
+				height: 100%
+			}
+			#basemapGalleryDiv{
+				 width: auto;
+			}
+			#Popula{
+				top: 15px;
+				right: 15px;
+				position: absolute;
+				z-index: 99;
+				background-color: white;
+				border-radius: 8px;
+				padding: 8px;
+				opacity: 0.85;
+				line-height: 22px;
+				font-size: 10pt;
+				overflow-y:auto;
+			}
+			#Popula span {
+				color: #005500;
+				font-weight: bold;
+				font-size: 11pt;
+/* 				display: flex;
+				justify-content: center; */
+			}
+/* 			.esri-button {
+				max-width: 50px;
+				margin-left: 10px;
+				color: #005500;
+			}
+			#query{
+				display: flex;
+				justify-content: center;
+			} */
+		</style>
+		<link rel="stylesheet" href="https://js.arcgis.com/4.23/esri/themes/light/main.css">
+		<script src="https://js.arcgis.com/4.23/"></script>
+		<script>
+			require(["esri/config","esri/Map", 
+			"esri/views/MapView",
+			"esri/Basemap",
+			"esri/layers/FeatureLayer",
+			"esri/widgets/Legend",
+			"esri/widgets/BasemapGallery",
+			"esri/widgets/Expand"], 
+			function (esriConfig, Map, MapView,Basemap, FLayer, Legend,BasemapGallery,Expand){
+		
+				esriConfig.apiKey = 
+				"AAPK449340f85b664e6b802d2d0e65eb4849vlSII8YqKpEj5Fn0hCy2qr4QyOAZRZSB6XWDc2-X8pFlNoRYoQoetUvFs1Y_JVKL";
+			
+				const popsymbol = {
+					  type: "simple-fill",
+					  // color: "#000000",
+					  outline: {
+						color: "rgba(0, 0, 0, 0.1)",
+						width: 0.5
+					  }
+					};
+				const Total_re = {
+					type: "simple",
+					symbol: popsymbol,
+					visualVariables: [
+					  {
+						type: "color",
+						field: "TOTPOP_CY_1", 
+						stops: [
+						  { value: 100000, color: "#D0D0CB" },
+						  { value: 10000000, color: "#4F6704" }
+						]
+					  }
+					]
+				};
+				const Total_pop = {
+					title: "{NAME}",
+					content: [{
+						type: "fields",
+						fieldInfos: [{
+						  fieldName: "TOTPOP_CY_1",
+						  label: "2018 Total Population"
+						},{
+						  fieldName: "PAGE01_CY",
+						  label: "2018 Total Population Age 0-14",
+						},{
+						  fieldName: "PAGE02_CY",
+						  label: "2018 Total Population Age 15-29",
+						},{
+						  fieldName: "PAGE03_CY",
+						  label: "2018 Total Population Age 30-44",
+						},{
+						  fieldName: "PAGE04_CY",
+						  label: "2018 Total Population Age 45-59",
+						},{
+						  fieldName: "PAGE05_CY",
+						  label: "2018 Total Population Age 60+",
+						},{
+						  fieldName: "MALES_CY",
+						  label: "2018 Total Male Population",
+						},{
+						  fieldName: "FEMALES_CY",
+						  label: "2018 Total Female Population",
+						}]
+					}],
+				};
+				const chinapop = new FLayer({
+					url:"https://services.arcgis.com/V6ZHFr6zdgNZuVG0/ArcGIS/rest/services/China_Prefecture_demographics/FeatureServer",
+					outFields: ["*"],
+					renderer: Total_re,
+					popupTemplate: Total_pop,
+					title: "2018年全国人口分布情况",
+				});
+				//map.add(chinapop);
+				const map = new Map({
+					basemap: "arcgis-dark-gray" ,
+					layers:[chinapop]
+				});
+				const view = new MapView({
+					map: map,
+					center: [114.805, 34.027], // Longitude, latitude
+					zoom: 3, // Zoom level
+					container: "viewDiv" ,// Div element
+					popup:{
+						dockOptions: {
+							//buttonEnabled: false,
+							position:"bottom-right",
+						}
+					}
+				});
+				const legend = new Legend({
+					view: view,
+				});
+				view.ui.add(legend, "bottom-left"); 
+				const popExpressionInfos = [
+				  {
+					name: "pop_male",
+					title: "男性人口占比",
+					expression: "Round(($feature.MALES_CY/$feature.TOTPOP_CY_1)*100,2)"
+				  },
+				  {
+					name: "pop_female",
+					title: "女性人口占比",
+					expression: "Round(($feature.FEMALES_CY/$feature.TOTPOP_CY_1)*100,2)"
+				  },				 
+				  {
+					name: "age_01",
+					title: "年龄为0-14岁人口占比",
+					expression: "Round(($feature.PAGE01_CY/$feature.TOTPOP_CY_1)*100,2)"
+				  },
+				  {
+					name: "age_02",
+					title: "年龄为15-29岁人口占比",
+					expression: "Round(($feature.PAGE02_CY/$feature.TOTPOP_CY_1)*100,2)"
+				  }, 
+				  {
+					name: "age_03",
+					title: "年龄为30-44岁人口占比",
+					expression: "Round(($feature.PAGE03_CY/$feature.TOTPOP_CY_1)*100,2)"
+				  },
+				  {
+					name: "age_04",
+					title: "年龄为45-59岁人口占比",
+					expression: "Round(($feature.PAGE04_CY/$feature.TOTPOP_CY_1)*100,2)"
+				  },
+				  {
+					name: "age_05",
+					title: "年龄为60+岁人口占比",
+					expression: "Round(($feature.PAGE05_CY/$feature.TOTPOP_CY_1)*100,2)"
+				  },
+				];
+
+				const Male = {
+					type: "simple",
+					symbol: popsymbol,
+					visualVariables:[
+					  {
+						type: "color",
+						valueExpression: "($feature.MALES_CY/$feature.TOTPOP_CY_1)*100",
+						valueExpressionTitle: "男性人口占比",
+						stops: [
+							{ value: 45, color: "#FFFCD4", label: "<45%" },
+							{ value: 55, color: "#0D2644", label: ">55%" }
+						],
+					  }
+					],
+				};
+				const Female = {
+					type: "simple",
+					symbol: popsymbol,
+					visualVariables:[
+					  {
+						type: "color",
+						valueExpression: "($feature.FEMALES_CY/$feature.TOTPOP_CY_1)*100",
+						valueExpressionTitle: "女性人口占比",
+						stops: [
+							{ value: 45, color: "#fffcd4", label: "<45%" },
+							{ value: 55, color: "#420239", label: ">55%" }
+						],
+						//const colors = ["#fffcd4", "#c8bcd4", "#907cd4", "#504692", "#10104f"];
+						//const colors = ["#fffcd4", "#eebe8b", "#dd8042", "#a24021", "#660000"];
+					  }
+					],
+				};
+				const Re = [Total_re,Male,Female];
+				for (var i=2;i<popExpressionInfos.length;i++){
+					const Age_0 = {
+						type: "simple",
+						symbol: popsymbol,
+						visualVariables:[
+						  {
+							type: "color",
+							//valueExpression: "($feature.PAGE01_CY/$feature.TOTPOP_CY_1)*100",
+							valueExpression: popExpressionInfos[i].expression,
+							valueExpressionTitle: popExpressionInfos[i].title,
+							stops: [
+								{ value: 10, color: "#f0f9e8", label: "<10%" },
+								{ value: 30, color: "#0868ac", label: ">30%" }
+							],
+							//const colors = ["#f0f9e8", "#bae4bc", "#7bccc4", "#43a2ca", "#0868ac"];
+						  }
+						],
+					};
+					Re.push(Age_0)									
+				}
+				var pop_id = document.getElementById('Popula');
+				var pop_name = document.getElementsByName('population');
+				pop_id.addEventListener('click',function(){
+					if (pop_name[0].checked){
+						chinapop.renderer = Re[0];
+						chinapop.popupTemplate = Total_pop;
+					}
+					for (var i=1;i<pop_name.length;i++){						
+						if (pop_name[i].checked){
+							chinapop.renderer = Re[i];
+							chinapop.popupTemplate = {
+								title: "{NAME}",
+								content: popExpressionInfos[i-1].title + "{expression/"+ pop_name[i].value + "}%，共{TOTPOP_CY_1}人",
+								expressionInfos: popExpressionInfos
+							};
+						}
+					}
+				});
+				const basemapGallery = new BasemapGallery({
+				   view: view,
+				   container: basemapGalleryDiv,
+				   source: [Basemap.fromId("arcgis-dark-gray"), Basemap.fromId("arcgis-light-gray")] 
+				});
+				const bgExpand = new Expand({
+					view: view,
+					content: basemapGalleryDiv,
+					expandIconClass: "esri-icon-basemap"
+				});
+				view.ui.add(bgExpand,"top-left");
+			});
+			
+		</script>
+	<body>		
+		<div id="viewDiv"></div>
+		<div id="basemapGalleryDiv"></div>		
+		<div id = "Popula">
+			<label>
+				<input type="radio" checked="checked" name="population" value="Total" /> 总人口数分布
+			</label>
+			</br>
+			<span>按性别划分</span>
+			</br>
+			<label>
+				<input type="radio" name="population" value="pop_male" /> 男性人口占比分布
+			</label>
+			</br>
+			<label>						
+				<input type="radio" name="population" value="pop_female" /> 女性人口占比分布
+			</label>
+			</br>
+			<span>按年龄划分</span>
+			</br>
+			<label>
+				<input type="radio" name="population" value="age_01" /> Age 0-14 占比分布
+			</label>
+			</br>
+			<label>						
+				<input type="radio" name="population" value="age_02" /> Age 15-29 占比分布
+			</label>
+			</br>
+			<label>
+				<input type="radio" name="population" value="age_03" /> Age 30-44 占比分布
+			</label>
+			</br>
+			<label>						
+				<input type="radio" name="population" value="age_04" /> Age 45-59 占比分布
+			</label>
+			</br>
+			<label>						
+				<input type="radio" name="population" value="age_05" /> Age 60+ 占比分布
+			</label>
+<!-- 			</br>
+			<div id="query">
+				<button id="query-parks" width="half" alignment="center" class="esri-button">Query</button>
+				<button id="clear-query" width="half" alignment="center" class="esri-button"> Clear</button>
+			</div> -->
+		</div>
+	</body>
+</html>
