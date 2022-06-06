@@ -258,19 +258,37 @@
 				var Clear = document.getElementById('clear_query');
 				var layerView;
 				view.whenLayerView(chinapop).then(function (lv) { layerView = lv });
-				Query.onclick = function(){
-					if (txt_pop.value != ""){
-						layerView.filter = {
-							where:txt_pop.value
-						};
-						view.popup.close();
-					}else{layerView.filter = null;}					
+				Query.onclick = async function(){
+					let query = chinapop.createQuery();
+					if(txt_pop.value != ""){
+						var objectIds = [];
+						try{
+							query.where = txt_pop.value;;
+							query.outFields = ["*"];							
+							const result = await chinapop.queryFeatures(query);
+							result.features.forEach(function(item){
+								objectIds.push(item.attributes.OBJECTID);
+							});
+							layerView.filter = {
+								objectIds
+							};
+							document.getElementById("results").innerHTML = objectIds.length;
+						}catch{
+							layerView.filter = null;
+							document.getElementById("results").innerHTML = "出错";
+						}
+					}else{
+						layerView.filter = null;
+						document.getElementById("results").innerHTML = "空值";
+					}
+					view.popup.close();
 					//NAME='Weifang City'
 					//where = txt_pop.value;
 				};
 				Clear.onclick = function(){
 					layerView.filter = null;
 					view.popup.close();
+					document.getElementById("results").innerHTML = "";
 				};
 				view.on('pointer-move', function(event){
 					let point = view.toMap({x: event.x, y: event.y});
@@ -323,7 +341,10 @@
 			<div style="width: 100%; display: flex;flex-direction: row;">
 				<calcite-button id="query_pop" width="half" appearance="solid" alignment="center" scale="s" >Query pops</calcite-button>
 				<calcite-button id="clear_query" width="half" appearance="outline" alignment="center" scale="s" style="margin-left: 10px;">Clear query</calcite-button>
-			</div>
+			</div></br>
+			<h3 class="esri-widget__heading">
+				Results:<label id= results ></label>
+			</h3>
 		</div>
 		<div id = "coord" class="esri-widget"></div>
 	</body>
