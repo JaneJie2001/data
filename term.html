@@ -264,19 +264,11 @@
 							where:txt_pop.value
 						};
 						view.popup.close();
-						popsymbol.outline = {
-							color: "rgb(0, 255, 255)",
-							width: 1
-						};
 					}					
 					//NAME='Weifang City'
 					//where = txt_pop.value;
 				};
 				Clear.onclick = function(){
-					popsymbol.outline = {
-						color: "rgba(0, 0, 0, 0.1)",
-						width: 0.5
-					};
 					layerView.filter = null;
 					view.popup.close();
 				};
